@@ -273,23 +273,15 @@ SELECT COUNT(DISTINCT(ship_country)) FROM orders
 GROUP BY ship_country
 
 --50. 3 numaralı ID ye sahip çalışan (employee) son Ocak ayından BUGÜNE toplamda ne kadarlık ürün sattı?
-
---1. Anlaşılan soruya göre cevap;
-SELECT e.first_name, SUM(od.quantity * od.unit_price)
+SELECT e.first_name, o.order_date, SUM(od.quantity * od.unit_price)
 FROM employees AS e
 JOIN orders AS o ON o.employee_id = e.employee_id
 JOIN order_details AS od ON o.order_id = od.order_id
-WHERE e.employee_id = 3 AND o.order_date > (SELECT DATE_TRUNC('MONTH', CURRENT_DATE) - INTERVAL '1 month') AND o.order_date < CURRENT_DATE
-GROUP BY e.first_name;
-
---2. Anlaşılan soruya göre cevap;
-SELECT e.first_name, SUM(od.quantity*od.unit_price) FROM employees AS e
-JOIN orders AS o
-ON o.employee_id = e.employee_id
-JOIN order_details AS od
-ON o.order_id = od.order_id
-WHERE e.employee_id = 3 AND o.order_date < CURRENT_DATE
-GROUP BY e.first_name
+WHERE e.employee_id = 3 
+AND  DATE_PART('month',o.order_date) = 1 
+AND DATE_PART('year',o.order_date) = (SELECT MAX(DATE_PART('year',order_date)) FROM orders)
+AND o.order_date < CURRENT_DATE
+GROUP BY e.first_name, o.order_date;
 
 --51. Hangi ülkeden kaç müşterimiz var
 SELECT o.ship_country, COUNT(DISTINCT(c.customer_id)) FROM orders AS o
